@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # dsda_project
 DSDA project on basic SAT solver using DPLL
 
@@ -8,3 +9,6 @@ cpp_solver/dpll.c -- is the source file for the main function
 
 To compile, run **make build**
 To run it with a sample cnf file (added one file simpleckt.cnf), __dpllcpp *<relative_path_of_cnf_file>*__
+=======
+This is the SAT solver developed as a part of the DSDA project
+>>>>>>> 2cfda90 (Updating the directory structure)
