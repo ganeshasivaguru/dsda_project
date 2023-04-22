@@ -7,4 +7,4 @@ cpp_solver/dimac.h -- Header file for the dimacs.c file
 cpp_solver/dpll.c -- is the source file for the main function
 
 To compile, run **make build**
-To run it with a sample cnf file (added one file simpleckt.cnf), **dpllcpp *<relative_path_of_cnf_file>* **
+To run it with a sample cnf file (added one file simpleckt.cnf), __dpllcpp *<relative_path_of_cnf_file>*__
