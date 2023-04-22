@@ -76,10 +76,11 @@ int main(int argc, char **argv)
      }
      // Create an array that is storing the state of the variable
 	 // When we create a free decision, or make a implied decision, we set the state of the variable to the corresponding value
-	 int *variableState = new int[variablesCount]; //This is the variable assignment state, 
+	 char *variableState = new char[variablesCount]; //This is the variable assignment state, 
 												   //when a decision regarding variable assignment is made this data structure is updated
+												   //0 - indicates variable set to 0, 1 - indicates variable set to 1, x - indicates variable is unset 
 	 char *clauseState = new char[clausesCount]; //This data structure indicates the status of the clause -> 1:Satisfied 0:Un-Satisfied x:Unresolved
-	 int *pendingVarState = new int[variablesCount];//When in the BCP, the decisions are made in the pendingVarState --> when the next free decision is made in the
+	 char *pendingVarState = new char[variablesCount];//When in the BCP, the decisions are made in the pendingVarState --> when the next free decision is made in the
 						  // DPLL main algorithm, the values in the pendingVarState are copied to the variableState data structure.
 
 	 int **watchedLiteral = new int*[clausesCount]; //The watched literal is added as a 2D array, each row corresponds to a clause
@@ -88,7 +89,11 @@ int main(int argc, char **argv)
 	     watchedLiteral[i] = new int[2];		 
 		 clauseState[i] = 'x';
      }
-     
+	 // Initializing all the variableState to x
+	 for (int i=0; i<variablesCount; i++) {
+	   variableState[i]='x';
+	   pendingVarState[i] = 'x';
+	 }
 	 //Setting the initial watch literals for all the clauses
 	 for(int i=0; i< clausesCount; ++i) {
 	   for(int j=0;j<clauses[i][0]; ++j) {
@@ -100,9 +105,11 @@ int main(int argc, char **argv)
 		   watchedLiteral[i][1] = 0;
            int unit_var = clauses[i][1];
 		   if(unit_var > 0) {
-		     variableState[unit_var] = 1;//Setting the unit clause to 1 when in uncomplemented form
+		     variableState[unit_var-1] = '1';//Setting the unit clause to 1 when in uncomplemented form
+											 // unit_var - 1 -> because index0 maps to variable 1, index1 maps to variable 2 and soon
 		   } else {
-		     variableState[unit_var] = 0; //Setting the unit clause to 0 when in complemented form
+		     variableState[unit_var-1] = '0'; //Setting the unit clause to 0 when in complemented form
+											 // unit_var - 1 -> because index0 maps to variable 1, index1 maps to variable 2 and soon
 		   }
 		   clauseState[i] = '1';
          }
@@ -113,6 +120,12 @@ int main(int argc, char **argv)
 	 for(int k=0; k<clausesCount; k++) {
 	   std::cout << clauseState[k] << " " ;
 	 }
+
+	 std::cout << "\n"; 
+	 for(int k=0; k<variablesCount; k++) {
+	   std::cout << variableState[k] << " " ;
+	 }
+
 	 std::cout << "\n"; 
 	 // Boolean Constraint propagation function
 	 //
