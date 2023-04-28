@@ -38,14 +38,13 @@ bool bcp(int **clauses, int **watchedLiteral, char *variableState, char *pending
 	   std::cout << "Watched literals for clause " << k << "is " << watchedLiteral[k][0] << " & " << watchedLiteral[k][1] << "\n"; 
 	   std::cout << "UNSIGNED TRANSFORMATION Watched literals for clause " << k << "is " << (unsigned int) watchedLiteral[k][0] << " & " << (unsigned int) watchedLiteral[k][1] << "\n"; 
 	 }*/
-  pendingVarState[abs(var_assignment)-1] = '1'; //variable gets assigned
+  pendingVarState[abs(var_assignment)-1] = (var_assignment > 0) ? '1' : '0'; //variable gets assigned
   for(int i=0; i<clausesCount; ++i) { // cyles through all clauses to 
 	//For the variable assignment update the clauseState using updateClauseState function
 	//updateClauseState(clauses[i],clauseState,var_assignment,clausesCount,i);
-	std::cout << "Checking for clause " << i+1 << "\n";
 	int updatedWatchedLiteral=0; // This is a flag variable to check if there is new watched literal or not
 	if(clauseState[i] == 'x') {
-	  std::cout << "Checking for clause " << i+1 << "\n";
+	  std::cout << "Checking for clause " << i << "\n";
 	  if(var_assignment == watchedLiteral[i][0] || var_assignment == watchedLiteral[i][1]) {
         //This is the case where the variable assignment matches the watchedLiteral of a clause. This makes the clause satisfied
 		clauseState[i] = '1';
@@ -105,11 +104,27 @@ bool bcp_top(int **clauses, int **watchedLiteral, char*variableState, char *pend
 	  std::cout << "There are some unit clauses to take care of \n";
       for(int i=0; i<clausesCount; i++) {
         if(clauseState[i] == 'u') {
-		  std::cout << "Clause no: " << i << " is unit clause\n";
+		  for(int i=0; i<variablesCount; i++) {
+             std::cout << "Pending var state for variable " << i+1 << "is " << pendingVarState[i] << "\n";
+		  }
+		  std::cout << "Clause no: " << i+1 << " is unit clause\n";
 		  std::cout << "clauses[i]" << *clauses[i] << "\n";
 		  int sub_var_assgn=getPendingVar(clauses[i],pendingVarState);
 		  std::cout << "Sub var assignment is " << sub_var_assgn << "\n";
-		  pendingVarState[abs(sub_var_assgn)-1] = (sub_var_assgn > 0) ? '1' : '0';
+		  if(sub_var_assgn == 0) {
+            // This means even though it is a unit clause, the variable has already been assigned
+			// Check if for the unit clause, does it break satisfiability
+			for(int j=0; j<clauses[i][0]; i++) {
+               if(int(pendingVarState[abs(clauses[i][j])-1]) != clauses[i][j]) {
+				//This could be a place to add new conflict clauses
+                 return false;
+			   }
+			}
+		  }
+		  //pendingVarState[abs(sub_var_assgn)-1] = (sub_var_assgn > 0) ? '1' : '0';
+		  //std::cout << "Pending var state of " << abs(sub_var_assgn) << ": " << pendingVarState[abs(sub_var_assgn)-1] << "\n";
+		  // Because we are setting the variable assignment based on the unit clause, it means that this clause will become satisfied
+		  clauseState[i] = '1';
           bool sub_result = bcp(clauses, watchedLiteral, variableState, pendingVarState, clauseState, sub_var_assgn, clausesCount, variablesCount);
 		  if(sub_result == false) {
             return false; //i.e for the initial assignment with the current pendingVar, there is UNSAT
@@ -117,6 +132,9 @@ bool bcp_top(int **clauses, int **watchedLiteral, char*variableState, char *pend
 	    } 
 	  }
     }
+  } else if (status == false) {
+    return false; // UNSAT
+		
   }
   return true; //i.e for the initial assignment an with all the assignments in pendingVar, there is either SAT or requirement for a new free assignment
 }
@@ -167,8 +185,9 @@ int main(int argc, char **argv)
     //printf("c Time to read: %.2fs\n", (double)(clock() - t_start_parse)/CLOCKS_PER_SEC);
 
      for (int i = 0; i < clausesCount; ++i) {
+	   std::cout << "Clause No: " << i;
        for (int j = 0; j <= clauses[i][0]; ++j) {
-         printf("%d ", clauses[i][j]);
+         printf(" %d ", clauses[i][j]);
        }
        printf("\n");
      }
@@ -231,7 +250,14 @@ int main(int argc, char **argv)
 	 int assignment_decision; //This variable with be the assigment made, Say var1 is set to 0, then set this to -1, if var2 is set this to 2, soon 
 	 // Boolean Constraint propagation function
 	 bool result=bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, 1 , clausesCount,variablesCount);
-         std::cout << "Result is " << result << "\n";
+	 if(result == true) variableState[0] = '1'; 
+	 if(result == true) {
+       result =bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, 2 , clausesCount,variablesCount); 
+	 }
+	 string output_str = (result == 1) ? "SAT" : "UNSAT";
+         std::cout << "---------------------------------------------\n";
+         std::cout << "Result is " << output_str << "\n";
+	     std::cout << "---------------------------------------------\n";
          for(int i=0; i<variablesCount; i++) {
            std::cout << "Variable " << i+1 << "state is " << variableState[i] << "\n";
            std::cout << "Pending Variable " << i+1 << "state is " << pendingVarState[i] << "\n";
