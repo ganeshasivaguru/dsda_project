@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <algorithm>
 #include <cstdlib>
+#include "vsids.cpp"
 
 using namespace std;
 
@@ -230,7 +231,9 @@ int main(int argc, char **argv)
 
 	 int assignment_decision; //This variable with be the assigment made, Say var1 is set to 0, then set this to -1, if var2 is set this to 2, soon 
 	 // Boolean Constraint propagation function
-	 bool result=bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, 1 , clausesCount,variablesCount);
+  assignment_decision = vsids(clauses, clausesCount, variableState, variablesCount);
+
+	 bool result=bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, assignment_decision, clausesCount,variablesCount);
          std::cout << "Result is " << result << "\n";
          for(int i=0; i<variablesCount; i++) {
            std::cout << "Variable " << i+1 << "state is " << variableState[i] << "\n";
