@@ -250,9 +250,7 @@ int main(int argc, char **argv)
 
 	 int assignment_decision; //This variable with be the assigment made, Say var1 is set to 0, then set this to -1, if var2 is set this to 2, soon 
 	 // Boolean Constraint propagation function
-  assignment_decision = vsids(clauses, clausesCount, variableState, variablesCount);
-
-	 bool result=bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, assignment_decision, clausesCount,variablesCount);
+	 bool result=bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, 1 , clausesCount,variablesCount);
 	 if(result == true) variableState[0] = '1'; 
 	 if(result == true) {
        result =bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, 2 , clausesCount,variablesCount); 
