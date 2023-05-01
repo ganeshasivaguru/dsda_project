@@ -32,15 +32,6 @@ bool checkUnitClauses(vector<char> &clauseState, int clausesCount) {
   return false;
 }
 
-int nextUnassignedPendingVar(char *variableState, char *pendingVarState, int variableCount) {
-  for(int i=0; i<variableCount; i++) {
-    if(variableState[i] == 'x' && pendingVarState[i] == 'x') {
-      return i+1;
-	}
-  }
-  return 0;
-}	
-
 bool checkClauseState(vector<char> &clauseState, int clausesCount) {
   for(int i=0; i<clausesCount; i++) {
     if(clauseState[i] != '1')  
@@ -66,7 +57,6 @@ bool bcp(vector<vector<int>> &clauses, vector<vector<int>> &watchedLiteral, char
 		  }
   pendingVarState[abs(var_assignment)-1] = (var_assignment > 0) ? '1' : '0'; //variable gets assigned
   for(int i=0; i<clausesCount; ++i) { // cyles through all clauses to 
-	int flag_to_set_clause_1 = 0;	  
 	//For the variable assignment update the clauseState using updateClauseState function
 	//updateClauseState(clauses[i],clauseState,var_assignment,clausesCount,i);
 	int updatedWatchedLiteral=0; // This is a flag variable to check if there is new watched literal or not
@@ -94,9 +84,6 @@ bool bcp(vector<vector<int>> &clauses, vector<vector<int>> &watchedLiteral, char
 	    }
 		for(int j=0; j<clauses[i][0]; j++) {
 		  if((variableState[abs((clauses[i][j+1]))-1] != 'x' || pendingVarState[abs((clauses[i][j+1]))-1] != 'x') || clauses[i][j+1] == watchedLiteral[i][0] || clauses[i][j+1] == watchedLiteral[i][1]) {
-			// If the non-watched literal variable is assigned a value that satisfies the clause --> set a flag and use that to set the clause state to 1
-			if((pendingVarState[abs((clauses[i][j+1]))-1] == '1' && clauses[i][j+1] > 0) || (pendingVarState[abs((clauses[i][j+1]))-1] == '0' && clauses[i][j+1] < 0))
-				flag_to_set_clause_1 = 1;
 			continue; //Because an assigned variable cannot be set as watched literal
 		  } else {
 		    std::cout << "Updated watched literal is " << clauses[i][j+1] << "\n";
@@ -114,11 +101,9 @@ bool bcp(vector<vector<int>> &clauses, vector<vector<int>> &watchedLiteral, char
 		  }
 		// If updatedWatchedLiteral is not changed --> Implies there is no new watch literal --> this is now a unit clause
         }
-        if(updatedWatchedLiteral !=1 && !flag_to_set_clause_1) { //Meaning the clause is unit
+        if(updatedWatchedLiteral !=1) { //Meaning the clause is unit
           clauseState[i] = 'u';
-		} else if (updatedWatchedLiteral != 1 && flag_to_set_clause_1) {
-          clauseState[i] = '1';
-		}
+		} 
 	  }
 	}
   }
@@ -203,7 +188,7 @@ bool SATCheck(vector<vector<int>> &clauses, vector<vector<int>> &watchedLiteral,
   std::cout <<"Memcpy successful" << endl; 
 
   copyclauseState = clauseState;
-  bool statewith1, nextTrywith1; // This will be assigned if result with assignment 1 results in a SAT
+  bool statewith1; // This will be assigned if result with assignment 1 results in a SAT
   
   bool BCPwith1 = bcp_top(clauses, watchedLiteral, variableState, pendingVarState, clauseState, var_assign, clausesCount, variablesCount);
 
@@ -214,13 +199,8 @@ bool SATCheck(vector<vector<int>> &clauses, vector<vector<int>> &watchedLiteral,
   } else if (BCPwith1 == true && checkClauseState(clauseState,clausesCount)) {
      // pick next variable and call SATCheck
 	 // select the next unassigned variable
-	 int potential_next_var = nextUnassignedPendingVar(variableState,pendingVarState, variablesCount);
-	 if(potential_next_var != 0) {
-	 	nextTrywith1 = SATCheck(clauses,watchedLiteral,variableState,pendingVarState, clauseState,clausesCount,variablesCount,variable_freq, potential_next_var);
-     } else {
-        std::cout << "There is some error in the code" << endl;
-		nextTrywith1 = false;
-	 }
+	 //
+	 bool nextTrywith1 = SATCheck(clauses,watchedLiteral,variableState,pendingVarState, clauseState,clausesCount,variablesCount,variable_freq, var_assign+1);
      statewith1=(nextTrywith1 == true) ? true : false;
   } else {
     statewith1 = false;
@@ -228,14 +208,11 @@ bool SATCheck(vector<vector<int>> &clauses, vector<vector<int>> &watchedLiteral,
   
   if(statewith1 == true) {
 	return true;
-  } else if (statewith1 == false) {
-    std::cout << "Variable assignement that is not working is : " << var_assign << endl;
-	std::cout << "Backtracking and checking the other path" << endl;
-  } 
+  }
 
   var_assign *= -1 ;
 
-  bool statewith0,nextTrywith0; 
+  bool statewith0;
   bool BCPwithN1 = bcp_top(clauses, watchedLiteral, variableState, copypendingVarState, copyclauseState, var_assign, clausesCount, variablesCount);
 
   if(BCPwithN1 == true && !checkClauseState(copyclauseState,clausesCount)) {
@@ -247,22 +224,14 @@ bool SATCheck(vector<vector<int>> &clauses, vector<vector<int>> &watchedLiteral,
   } else if (BCPwithN1 == true && checkClauseState(copyclauseState,clausesCount)) {
      // pick next variable and call SATCheck
 	 // select the next unassigned variable
-	 int potential_next_var = nextUnassignedPendingVar(variableState,copypendingVarState, variablesCount);
-	 if(potential_next_var != 0) {
-	 	nextTrywith0 = SATCheck(clauses, watchedLiteral, variableState, copypendingVarState, copyclauseState, clausesCount, variablesCount, variable_freq, potential_next_var);
-	 	clauseState = copyclauseState;
-	 	memcpy(pendingVarState,copypendingVarState,variablesCount);
-     } else {
-        std::cout << "There is some error in the code" << endl;
-		nextTrywith0 = false;
-	 }
+	 bool nextTrywith0 = SATCheck(clauses, watchedLiteral, variableState, copypendingVarState, copyclauseState, clausesCount, variablesCount, variable_freq, var_assign - 1);
+	 clauseState = copyclauseState;
+	 memcpy(pendingVarState,copypendingVarState,variablesCount);
 	 statewith0 = (nextTrywith0 == true) ? true : false;
   } else {
      statewith0 = false;
   }
     
-  std::cout << "Unsat here: " << (statewith1 | statewith0) << endl;
-  std::cout << "Var assign is " << var_assign << endl;
   return (statewith0 | statewith1);
 }
 
@@ -352,9 +321,9 @@ int main(int argc, char **argv)
 		vector<int> watchedLiteral_temp;
 	   //for(int j=0;j<clauses[i][0]; ++j) {
 		 if(clauses[i][0] != 1) {
-			//std::cout << "size of clause " << clauses[i][0] << endl;
+			std::cout << "size of clause " << clauses[i][0] << endl;
 			watchedLiteral_temp.push_back(clauses[i][1]);
-			//std::cout << "clause [i][2] " << clauses[i][2] << endl;
+			std::cout << "clause [i][2] " << clauses[i][2] << endl;
  			watchedLiteral_temp.push_back(clauses[i][2]);
 			watchedLiteral.push_back(watchedLiteral_temp);
          } else if (clauses[i][0] == 1) {
@@ -389,19 +358,18 @@ int main(int argc, char **argv)
 
 	 // Vector to indicate the frequency of each variable -- will use in branch decision
 	 vector<int> variable_freq (variablesCount,0);
-
 	 //for(int i =0; i< variablesCount; ++i) {
        for(int j=0; j<clausesCount; ++j) {
 		  for(int k=0; k<clauses[j][0]; ++k) {
-		    //std::cout << abs(clauses[j][k+1]);
+		    std::cout << abs(clauses[j][k+1]);
 			variable_freq[abs(clauses[j][k+1])-1]++;
 		  }
 	   }
 	 //}
 
-	  //for(int i=0; i<variablesCount; i++) {
-	  //  std::cout << "Variable  " << i+1 << ": " << variable_freq[i] << endl;
-	  //}
+	  for(int i=0; i<variablesCount; i++) {
+		std::cout << "Variable  " << i+1 << ": " << variable_freq[i] << endl;
+	  }
       size_t max_val = *max_element(variable_freq.begin(),variable_freq.end());
 	  auto index=find(variable_freq.begin(),variable_freq.end(),max_val);
 	  int max_index = index - variable_freq.begin();
@@ -426,23 +394,13 @@ int main(int argc, char **argv)
      //  result =bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, 2 , clausesCount,variablesCount); 
 	 //}
 	 // Solution is the union of the variable states in VariableState and pendingVarstate arrays
-	 /*if (result == 1) {
-       // Assign pendingVar state to variable State 
-	   for(int i=0; i<variablesCount; i++) {
-         variableState[i] = pendingVarState[i];
-	   }
-	   for(int j=0; j<clauses
-	   // then call the result check function to validate the solution
-	   
-
-	 }*/
 	 string output_str = (result == 1) ? "SAT" : "UNSAT";
          std::cout << "---------------------------------------------\n";
          std::cout << "Result is " << output_str << "\n";
 	     std::cout << "---------------------------------------------\n";
          for(int i=0; i<variablesCount; i++) {
            std::cout << "Variable " << i+1 << "state is " << variableState[i] << "\n";
-           //std::cout << "Pending Variable " << i+1 << "state is " << pendingVarState[i] << "\n";
+           std::cout << "Pending Variable " << i+1 << "state is " << pendingVarState[i] << "\n";
          }
          for(int j=0; j<clausesCount; j++) {
            std::cout << "Clause " << j << "state is " << clauseState[j] << "\n";
