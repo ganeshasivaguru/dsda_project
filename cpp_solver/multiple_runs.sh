@@ -4,7 +4,7 @@ i=0
 #state=();
 state=0;
 #echo $i
-for file in ../../dsda_project_latest/dsda_project/cpp_solver/cnf/*
+for file in ../../dsda_project_latest/dsda_project/cpp_solver/UF250.1065.100/*
   do
     if grep -q 'Not satisfiable' "$file"; then
 		  state=0;

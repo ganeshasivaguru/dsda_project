@@ -348,12 +348,14 @@ int main(int argc, char **argv)
 
      for (int i = 0; i < clausesCount; ++i) {
 	   std::cout << "Clause No " << i+1<<":";
-       for (int j = 0; j <= clauses[i][0]; ++j) {
+       for (int j = 1; j <= clauses[i][0]; ++j) {
          printf(" %d ", clauses[i][j]);
        }
        printf("\n");
      }
 	 printf("Time to read: %.3fs\n", (double)(clock() - t_start_parse)/CLOCKS_PER_SEC);
+
+    std::cout<<"\nSolving...";
 
      t_start_parse=clock();
      // Create an array that is storing the state of the variable
@@ -416,7 +418,7 @@ int main(int argc, char **argv)
 	 //  std::cout << "Watched literals for clause " << k << "is " << watchedLiteral[k][0] << " & " << watchedLiteral[k][1] << "\n"; 
 	 //}
 
-	 std::cout << "\n"; 
+	 //std::cout << "\n"; 
 	 //for(int k=0; k<variablesCount; k++) {
 	 //  std::cout << variableState[k] << " " ;
 	 //}
@@ -516,15 +518,15 @@ int main(int argc, char **argv)
             std::cout<<endl;
          }
 	   }
-	   if(no_of_satisfied_clauses == clausesCount) std::cout << "The variables assignment satisfies all the clauses" << endl;
-	   else std::cout << "##@@##@@ ##$!@@# Some error with the Solver :( :(  Only " << no_of_satisfied_clauses << " clauses out of " << clausesCount << " are satisfied."<<endl; 
+	   if(no_of_satisfied_clauses == clausesCount) std::cout << "\n\nThe variables assignment satisfies all the clauses" << endl;
+	   else std::cout << "\n\n##@@##@@ ##$!@@# Some error with the Solver :( :(  Only " << no_of_satisfied_clauses << " clauses out of " << clausesCount << " are satisfied."<<endl; 
 	 }
      
     //for(int j=0; j<clausesCount; j++) {
     //       std::cout << "Clause " << j << " state is " << clauseState[j] << "\n";
     //    }
     string output_str = (result == 1) ? "SAT" : "UNSAT";
-    std::cout << "---------------------------------------------\n";
+    std::cout << "\n---------------------------------------------\n";
     std::cout << "RESULT: " << output_str << "\n";
 	
     std::cout<<"ASSIGNMENT: ";
