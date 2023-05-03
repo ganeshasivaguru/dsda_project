@@ -12,12 +12,8 @@ using namespace std;
 
 
 int getPendingVar(vector<int> clause, char *pendingVarState) {
-  //std::cout << "getPendingVar " << (pendingVarState[0]) << "\n";
   for(int i=0; i<clause[0]; i++) {
-	//std::cout << "clause[" << i << "]: " << clause[i+1] << "\n";
-	//std::cout << "abs:" << abs(clause[i]) << "\n";
     if(pendingVarState[abs(clause[i+1])-1] == 'x') {
-	  //std::cout << "returning value:" << clause[i+1] << "\n";
       return clause[i+1];
 	}
   }
@@ -28,14 +24,10 @@ int dlis(vector<vector<int> > clauses, int clausesCount, char*variableState, cha
     int max=-1;
     int assignment_decision=0;
 
-    //std::cout<<"Entered DLIS"<<endl;
-
 //One literal clause assignment
     for (int i=0;i<clausesCount;++i){
         if (clauses[i][0]==1 && variableState[abs(clauses[i][1])-1] == 'x' && pendingVarState[abs(clauses[i][1]-1) == 'x']){
-            
             return (clauses[i][1]);
-            
         }
     }
 
@@ -50,7 +42,6 @@ int dlis(vector<vector<int> > clauses, int clausesCount, char*variableState, cha
     for (int j=1;j<=variablesCount;j++){
         if (abs(variable_freq[j])==max && variableState[j-1]=='x' && pendingVarState[j-1]=='x'){
             assignment_decision=j*((variable_freq[j]<0) ? -1 : 1);
-            //std::cout<<"The max is "<<max<<" and assignment decision is "<<assignment_decision<<endl;
             return assignment_decision;
         }
     }
@@ -88,23 +79,11 @@ bool checkClauseState(vector<char> &clauseState, int clausesCount) {
 }*/
 
 bool bcp(vector<vector<int> > &clauses, vector<vector<int> > &watchedLiteral, char *variableState, char *pendingVarState, vector<char> &clauseState, int var_assignment, int clausesCount, int variablesCount) {
-  //std::cout << "Variable assignment is "<< var_assignment << "\n";
-	 /*for(int k=0; k<clausesCount; k++) {
-	   std::cout << clauseState[k] << " " ;
-	   std::cout << "Watched literals for clause " << k << "is " << watchedLiteral[k][0] << " & " << watchedLiteral[k][1] << "\n"; 
-	   std::cout << "UNSIGNED TRANSFORMATION Watched literals for clause " << k << "is " << (unsigned int) watchedLiteral[k][0] << " & " << (unsigned int) watchedLiteral[k][1] << "\n"; 
-	 }*/
-		  /*for(int i=0; i<variablesCount; i++) {
-             std::cout << "Pending var state for variable " << i+1 << "is " << pendingVarState[i] << "\n";
-		  }*/
   pendingVarState[abs(var_assignment)-1] = (var_assignment > 0) ? '1' : '0'; //variable gets assigned
   for(int i=0; i<clausesCount; ++i) { // cyles through all clauses to 
 	int flag_to_set_clause_1 = 0;	  
-	//For the variable assignment update the clauseState using updateClauseState function
-	//updateClauseState(clauses[i],clauseState,var_assignment,clausesCount,i);
 	int updatedWatchedLiteral=0; // This is a flag variable to check if there is new watched literal or not
 	if(clauseState[i] == 'x' || clauseState[i] == 'u') {
-
 	  if(clauses[i][0] == 1) {
          if(var_assignment == clauses[i][1]) {
 				 clauseState[i] = '1';
@@ -113,14 +92,12 @@ bool bcp(vector<vector<int> > &clauses, vector<vector<int> > &watchedLiteral, ch
 		        return false; //UNSAT 
 		 }
 	  }
-	  //std::cout << "Checking for clause " << i << "\n";
 	  if(var_assignment == watchedLiteral[i][0] || var_assignment == watchedLiteral[i][1]) {
         //This is the case where the variable assignment matches the watchedLiteral of a clause. This makes the clause satisfied
 		clauseState[i] = '1';
 	  } else if(abs(var_assignment) == abs(watchedLiteral[i][0]) || abs(var_assignment) == abs(watchedLiteral[i][1])) {
         //This is the case where the variable is in watched literal but in opposite form
-		// In this case, if we see that the assignment conflicts a unit clause --> return UNSAT
-	    //std::cout << "Watched literal was assigned, time to change the watched literal\n" ;
+		// In this case, if we see that the assignment conflicts a unit clause --> return UNSAT;
 		if(clauseState[i] == 'u') {
 		  clauseState[i] = '0'; //Setting that the clause doesnt get SAT
           return false; //UNSAT 
@@ -132,9 +109,6 @@ bool bcp(vector<vector<int> > &clauses, vector<vector<int> > &watchedLiteral, ch
 				flag_to_set_clause_1 = 1;
 			continue; //Because an assigned variable cannot be set as watched literal
 		  } else {
-		    //std::cout << "Updated watched literal is " << clauses[i][j+1] << "\n";
-			//std::cout << "variable state of updated watched literal is : " << variableState[abs((clauses[i][j+1]))-1] << endl;
-            //std::cout << "Pending variable state of the updated watched literal is : " << variableState[abs((clauses[i][j+1]))-1] << endl;
             if(abs(var_assignment) == abs(watchedLiteral[i][0])) {
               watchedLiteral[i][0] = clauses[i][j+1];
 			  updatedWatchedLiteral++;
@@ -165,50 +139,16 @@ bool bcp_top(vector<vector<int> > &clauses, vector<vector<int> > &watchedLiteral
   // 3. If the return of BCP is false, then there is UNSAT, send UNSAT to main function.
   // 4. if the return is not false, recall to see the next unit clause and continue the same 
   bool status=bcp(clauses, watchedLiteral, variableState, pendingVarState, clauseState, var_assignment, clausesCount, variablesCount);
-  /*std::cout << "updated status and watched literals\n";
-	 for(int k=0; k<clausesCount; k++) {
-	   std::cout << clauseState[k] << " " ;
-	   std::cout << "Watched literals for clause " << k << "is " << watchedLiteral[k][0] << " & " << watchedLiteral[k][1] << "\n"; 
-	 }*/
-  /*std::cout << "\n"; 
-	 for(int k=0; k<variablesCount; k++) {
-	   std::cout << "Variable " << k << << variableState[k] << " " ;
-	 }*/
-
+  
   if(status != false) {
 	while(checkUnitClauses(clauseState,clausesCount)) {
-	  //std::cout << "There are some unit clauses to take care of \n";
       for(int i=0; i<clausesCount; i++) {
         if(clauseState[i] == 'u') {
-		  //for(int i=0; i<variablesCount; i++) {
-          //   std::cout << "Pending var state for variable " << i+1 << "is " << pendingVarState[i] << "\n";
-		  //}
-		  //std::cout << "Clause no: " << i+1 << " is unit clause\n";
-		  //std::cout << "clauses[i]" << *clauses[i] << "\n";
 		  int sub_var_assgn=getPendingVar(clauses[i],pendingVarState);
-		  //std::cout << "Sub var assignment is " << sub_var_assgn << "\n";
-		  /*if(sub_var_assgn == 0) {
-            // This means even though it is a unit clause, the variable has already been assigned
-			// Check if for the unit clause, does it break satisfiability
-			for(int j=0; j<clauses[i][0]; i++) {
-               if(int(pendingVarState[abs(clauses[i][j])-1]) != clauses[i][j]) {
-				//This could be a place to add new conflict clauses
-                 return false;
-			   }
-			}
-		  }*/
-		  //pendingVarState[abs(sub_var_assgn)-1] = (sub_var_assgn > 0) ? '1' : '0';
-		  //std::cout << "Pending var state of " << abs(sub_var_assgn) << ": " << pendingVarState[abs(sub_var_assgn)-1] << "\n";
 		  // Because we are setting the variable assignment based on the unit clause, it means that this clause will become satisfied
 		  clauseState[i] = '1';
           bool sub_result = bcp(clauses, watchedLiteral, variableState, pendingVarState, clauseState, sub_var_assgn, clausesCount, variablesCount);
-	      //for(int k=0; k<clausesCount; k++) {
-	      //  std::cout << clauseState[k] << " " ;
-          //}
 		  if(sub_result == false) {
-			// adding conflict clauses
-			//addConflictClause(i,clauses,watchedLiteral,variableState,pendingVarState,clauseState,sub_var_assgn,clausesCount,variablesCount);
-
             return false; //i.e for the initial assignment with the current pendingVar, there is UNSAT
 		  }
 	    } 
@@ -222,23 +162,14 @@ bool bcp_top(vector<vector<int> > &clauses, vector<vector<int> > &watchedLiteral
 
 bool SATCheck(vector<vector<int> > &clauses, vector<vector<int> > &watchedLiteral, char *variableState, char *pendingVarState, vector<char> &clauseState, int clausesCount, int variablesCount, vector<int> &variable_freq, int var_assign) {
 
-  // Pick the variable to assign
-  //int test_variable = variable_freq.begin();
-  // Currently picking the first variable
-  //int var_assign = 1;
-  //
-		//std::cout << "entering SAT check" << endl;
-
   char * copypendingVarState = new char[variablesCount];
   vector<char> copyclauseState;
 
-  memcpy(copypendingVarState, pendingVarState, variablesCount); //Creating the copy as when the complemented form is tested you need a fresh set of assignments
-  //std::cout <<"Memcpy successful" << endl; 
+  memcpy(copypendingVarState, pendingVarState, variablesCount); //Creating the copy as when the complemented form is tested you need a fresh set of assignments 
 
   copyclauseState = clauseState;
   bool statewith1, nextTrywith1; // This will be assigned if result with assignment 1 results in a SAT
-  
-  //std::cout<<"Entering BCP top";
+
   bool BCPwith1 = bcp_top(clauses, watchedLiteral, variableState, pendingVarState, clauseState, var_assign, clausesCount, variablesCount);
 
   if (BCPwith1 == true && !checkClauseState(clauseState, clausesCount)) {
@@ -248,7 +179,6 @@ bool SATCheck(vector<vector<int> > &clauses, vector<vector<int> > &watchedLitera
   } else if (BCPwith1 == true && checkClauseState(clauseState,clausesCount)) {
      // pick next variable and call SATCheck
 	 // select the next unassigned variable
-	 //int potential_next_var = nextUnassignedPendingVar(variableState,pendingVarState, variablesCount);
 	 int potential_next_var = dlis(clauses, clausesCount, variableState, pendingVarState, variablesCount, variable_freq);
      pendingVarState[abs(potential_next_var)-1] = (potential_next_var>0) ? '1' : '0';
      if(potential_next_var != 0) {
@@ -264,12 +194,9 @@ bool SATCheck(vector<vector<int> > &clauses, vector<vector<int> > &watchedLitera
   
   if(statewith1 == true) {
 	return true;
-  } else if (statewith1 == false) {
-    //std::cout << "Variable assignement that is not working is : " << var_assign << endl;
-	//std::cout << "Backtracking and checking the other path" << endl;
-  } 
+  }
 
-  var_assign *= -1 ;
+  var_assign *= -1;
 
   bool statewith0,nextTrywith0; 
   bool BCPwithN1 = bcp_top(clauses, watchedLiteral, variableState, copypendingVarState, copyclauseState, var_assign, clausesCount, variablesCount);
@@ -283,7 +210,6 @@ bool SATCheck(vector<vector<int> > &clauses, vector<vector<int> > &watchedLitera
   } else if (BCPwithN1 == true && checkClauseState(copyclauseState,clausesCount)) {
      // pick next variable and call SATCheck
 	 // select the next unassigned variable
-	 //int potential_next_var = nextUnassignedPendingVar(variableState,copypendingVarState, variablesCount);
 	 int potential_next_var = dlis(clauses, clausesCount, variableState, copypendingVarState, variablesCount, variable_freq);
      copypendingVarState[abs(potential_next_var)-1] = (potential_next_var>0) ? '1' : '0';
      if(potential_next_var != 0) {
@@ -299,8 +225,6 @@ bool SATCheck(vector<vector<int> > &clauses, vector<vector<int> > &watchedLitera
      statewith0 = false;
   }
     
-  //std::cout << "Unsat here: " << (statewith1 | statewith0) << endl;
-  //std::cout << "Var assign is " << var_assign << endl;
   return (statewith0 | statewith1);
 }
 
@@ -353,9 +277,7 @@ int main(int argc, char **argv)
        }
        printf("\n");
      }
-	 printf("Time to read: %.3fs\n", (double)(clock() - t_start_parse)/CLOCKS_PER_SEC);
-
-    std::cout<<"\nSolving...";
+	 printf("Time to read: %.3fs. Now Solving...", (double)(clock() - t_start_parse)/CLOCKS_PER_SEC);
 
      t_start_parse=clock();
      // Create an array that is storing the state of the variable
@@ -370,14 +292,6 @@ int main(int argc, char **argv)
      // Adding vectors for clauseState and watchedLiterals as they can potentially increase when conflict driven learning is used.
 	 vector<char> clauseState (clausesCount,'x');
 	 vector<vector<int> > watchedLiteral;
-
-	 //int **watchedLiteral = new int*[clausesCount]; //The watched literal is added as a 2D array, each row corresponds to a clause
-	 // Creating the second dimension of the 2D array, and setting intial clauseState to "x"
-	 /*for (int i=0; i < clausesCount; i++) {
-		 //watchedLiteral[i] = new int[2];
-          
-		 clauseState[i] = 'x';
-     }*/
 
 	 // Initializing all the variableState to x
 	 for (int i=0; i<variablesCount; i++) {
@@ -412,26 +326,13 @@ int main(int argc, char **argv)
 	   //}
      }
     
-     // GVS: Just printing the clauseState to verify it all initial unit clauses are set	 
-	 //for(int k=0; k<clausesCount; k++) {
-	 //  std::cout << clauseState[k] << " " ;
-	 //  std::cout << "Watched literals for clause " << k << "is " << watchedLiteral[k][0] << " & " << watchedLiteral[k][1] << "\n"; 
-	 //}
-
-	 //std::cout << "\n"; 
-	 //for(int k=0; k<variablesCount; k++) {
-	 //  std::cout << variableState[k] << " " ;
-	 //}
-
 	 // Vector to indicate the frequency of each variable -- will use in branch decision
 	 vector<int> variable_freq_positive (variablesCount+1,0);
      vector<int> variable_freq_negative (variablesCount+1,0);
      vector<int> variable_freq (variablesCount+1,0);
 
-	 //for(int i =0; i< variablesCount; ++i) {
        for(int j=0; j<clausesCount; ++j) {
 		  for(int k=0; k<clauses[j][0]; ++k) {
-		    //std::cout << abs(clauses[j][k+1]);
             if (clauses[j][k+1]>0){
 			variable_freq_positive[(clauses[j][k+1])]++;
 		  } else if (clauses[j][k+1]<0){
@@ -439,30 +340,12 @@ int main(int argc, char **argv)
           } 
 	   }
        }
-	 //}
 
      //fill variable freq vector with frequency of literal at index position, which is positive if more positive literals are there and
      //negative if there are more negative literals.
         for (int i=0; i<=variablesCount; i++){
             variable_freq[i] = ((variable_freq_positive[i]-variable_freq_negative[i])>=0) ? variable_freq_positive[i] : -1*variable_freq_negative[i];
         }
-	  //for(int i=0; i<variablesCount; i++) {
-	  //  std::cout << "Variable  " << i+1 << ": " << variable_freq_positive[i+1] << endl;
-	  //}
-
-	  //for(int i=0; i<variablesCount; i++) {
-	  //  std::cout << "Variable  " << -(i+1) << ": " << variable_freq_negative[i+1] << endl;
-	  //}
-
-	  //for(int i=0; i<variablesCount; i++) {
-	  //  std::cout << "Variable  " << i+1 << ": " << variable_freq[i+1] << endl;
-	  //}
-      //size_t max_val_positive = *max_element(variable_freq_positive.begin(),variable_freq_positive.end());
-	  //auto index=find(variable_freq_positive.begin(),variable_freq_positive.end(),max_val);
-	  //int max_index = index - variable_freq_positive.begin();
-	  //std::cout << "-------------------------------------" << endl;
-	  //std::cout << max_index+1 << endl;
-	  //std::cout << "-------------------------------------" << endl;
 	  // Steps to run DPLL.
 	  // Pick the variable with the max frequency and assign it a value
 	  // then call BCP. If BCP return false. reset all the pendingVar state, reset all the clause state and then call the BCP with negative value of max frequency.
@@ -470,28 +353,10 @@ int main(int argc, char **argv)
 	  // If the BCP returns true in any one case, check if all the caluses are satisfied --> If yes then the problem is SAT and the values in the pendingVar is the assignment values
 	  // if BCP returns true but not all clauses are satisfied --> check for the next highest variable that can be assigned and assign it to a value and call this recursively until you reach a SAT 
 
-
-
 	 int assignment_decision = dlis(clauses, clausesCount, variableState, pendingVarState, variablesCount, variable_freq); //This variable with be the assigment made, Say var1 is set to 0, then set this to -1, if var2 is set this to 2, soon 
 	 pendingVarState[abs(assignment_decision)-1] = (assignment_decision>0) ? '1' : '0';
      bool result = SATCheck(clauses, watchedLiteral, variableState, pendingVarState, clauseState, clausesCount, variablesCount, variable_freq, assignment_decision);
 	 // Boolean Constraint propagation function
-	 //bool result=bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, 1 , clausesCount,variablesCount);
-	 //if(result == true) variableState[0] = '1'; 
-	 //if(result == true) {
-     //  result =bcp_top(clauses, watchedLiteral,variableState,pendingVarState, clauseState, 2 , clausesCount,variablesCount); 
-	 //}
-	 // Solution is the union of the variable states in VariableState and pendingVarstate arrays
-	 /*if (result == 1) {
-       // Assign pendingVar state to variable State 
-	   for(int i=0; i<variablesCount; i++) {
-         variableState[i] = pendingVarState[i];
-	   }
-	   for(int j=0; j<clauses
-	   // then call the result check function to validate the solution
-	   
-
-	 }*/
 
     if (result == 1) {
        // Assign pendingVar state to variable State 
@@ -518,22 +383,21 @@ int main(int argc, char **argv)
             std::cout<<endl;
          }
 	   }
-	   if(no_of_satisfied_clauses == clausesCount) std::cout << "\n\nThe variables assignment satisfies all the clauses" << endl;
-	   else std::cout << "\n\n##@@##@@ ##$!@@# Some error with the Solver :( :(  Only " << no_of_satisfied_clauses << " clauses out of " << clausesCount << " are satisfied."<<endl; 
+       std::cout<<"\n\nSolved! Now checking whether solution satisfies claues...";
+	   if(no_of_satisfied_clauses == clausesCount) std::cout << "\nThe variables assignment satisfies all the clauses!" << endl;
+	   else std::cout << "\n##@@##@@ ##$!@@# Some error with the Solver :( :(  Only " << no_of_satisfied_clauses << " clauses out of " << clausesCount << " are satisfied."<<endl; 
 	 }
      
-    //for(int j=0; j<clausesCount; j++) {
-    //       std::cout << "Clause " << j << " state is " << clauseState[j] << "\n";
-    //    }
     string output_str = (result == 1) ? "SAT" : "UNSAT";
     std::cout << "\n---------------------------------------------\n";
     std::cout << "RESULT: " << output_str << "\n";
 	
+    if (result==1){
     std::cout<<"ASSIGNMENT: ";
     for(int i=0; i<variablesCount; i++) {
            std::cout << "V" << i+1 << "=" << variableState[i] << " ";
-           //std::cout << "Pending Variable " << i+1 << "state is " << pendingVarState[i] << "\n";
         }
+    }
     std::cout << "\n---------------------------------------------\n";	
     printf("Time to solve: %.3fs\n", (double)(clock()-t_start_parse)/CLOCKS_PER_SEC);
     return 0;
