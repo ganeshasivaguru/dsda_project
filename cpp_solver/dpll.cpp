@@ -358,10 +358,11 @@ int main(int argc, char **argv)
      bool result = SATCheck(clauses, watchedLiteral, variableState, pendingVarState, clauseState, clausesCount, variablesCount, variable_freq, assignment_decision);
 	 // Boolean Constraint propagation function
 
+    std::cout<<"\n\nSolved! Now checking whether the solution satisfies clauses...";
     if (result == 1) {
-       // Assign pendingVar state to variable State 
+       // Assign pendingVar state to variable State, also change don't cares/unassigned to 1 
 	   for(int i=0; i<variablesCount; i++) {
-         variableState[i] = pendingVarState[i];
+         variableState[i] = ((pendingVarState[i]=='0') ? '0' : '1');
 	   }
 	   int no_of_satisfied_clauses=0;
 	   // then call the result check function to validate the solution
@@ -383,8 +384,7 @@ int main(int argc, char **argv)
             std::cout<<endl;
          }
 	   }
-       std::cout<<"\n\nSolved! Now checking whether solution satisfies claues...";
-	   if(no_of_satisfied_clauses == clausesCount) std::cout << "\nThe variables assignment satisfies all the clauses!" << endl;
+	   if(no_of_satisfied_clauses == clausesCount) std::cout << "\nThe variable assignment satisfies all the clauses!" << endl;
 	   else std::cout << "\n##@@##@@ ##$!@@# Some error with the Solver :( :(  Only " << no_of_satisfied_clauses << " clauses out of " << clausesCount << " are satisfied."<<endl; 
 	 }
      
@@ -395,10 +395,10 @@ int main(int argc, char **argv)
     if (result==1){
     std::cout<<"ASSIGNMENT: ";
     for(int i=0; i<variablesCount; i++) {
-           std::cout << "V" << i+1 << "=" << variableState[i] << " ";
+           std::cout<< i+1 << "=" << variableState[i] << " ";
         }
     }
     std::cout << "\n---------------------------------------------\n";	
-    printf("Time to solve: %.3fs\n", (double)(clock()-t_start_parse)/CLOCKS_PER_SEC);
+    printf("Time to solve: %.4fs\n", (double)(clock()-t_start_parse)/CLOCKS_PER_SEC);
     return 0;
 }
